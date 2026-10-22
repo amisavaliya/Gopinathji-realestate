@@ -1,0 +1,16 @@
+node_modules
+.next
+.DS_Store
+# Keep environment variables out of version control
+.env
+.env.local
+.env.*.local
+
+/generated/prisma
+tsconfig.tsbuildinfo
+
+# AI tool configs (keep local, not part of the app)
+.agents/
+.claude/
+.windsurf/
+skills-lock.json

@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(EDITOR)
+  createdAt    DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+model Scheme {
+  slug        String   @id
+  nameGu      String
+  nameEn      String
+  taglineGu   String?
+  taglineEn   String?
+  descriptionEn  String?
+  status      SchemeStatus @default(ONGOING)
+  developer   String
+  featured    Boolean  @default(false)
+  architect   String?
+  addressGu   String
+  addressEn   String
+  surveyRef   String?
+  mapsUrl     String?
+  phones      String[]
+  totalPlots  Int @default(0)
+  type           ProjectType @default(RESIDENTIAL_PLOTS)
+  configuration  String?
+  towers         Int?
+  floorsLabel    String?
+  reraNumber     String?
+  accentColor String   @default("#0F6E56")
+  published   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+
+  amenities  SchemeAmenity[]
+  floorPlans FloorPlan[]
+  plots      Plot[]
+  media      Media[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum SchemeStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+}
+enum ProjectType {
+  RESIDENTIAL_PLOTS
+  RESIDENTIAL_FLATS
+  INDUSTRIAL_PLOTS
+}
+
+model Amenity {
+  key     String @id
+  labelGu String
+  labelEn String
+  icon    String
+
+  schemes SchemeAmenity[]
+}
+
+model SchemeAmenity {
+  schemeSlug String
+  amenityKey String
+  sortOrder  Int    @default(0)
+
+  scheme  Scheme  @relation(fields: [schemeSlug], references: [slug], onDelete: Cascade)
+  amenity Amenity @relation(fields: [amenityKey], references: [key], onDelete: Cascade)
+
+  @@id([schemeSlug, amenityKey])
+}
+
+model FloorPlan {
+  id           String  @id @default(cuid())
+  schemeSlug   String
+  nameGu       String
+  nameEn       String
+  builtUpArea  String
+  plotSize     String?
+  bedrooms     Int
+  floors       Int     @default(1)
+  imageUrl     String
+  thumbUrl     String
+  pdfUrl       String?
+  sortOrder    Int     @default(0)
+
+  scheme Scheme @relation(fields: [schemeSlug], references: [slug], onDelete: Cascade)
+
+  @@index([schemeSlug])
+}
+
+model Plot {
+  id         String     @id @default(cuid())
+  schemeSlug String
+  number     String
+  sqYard     Float
+  status     PlotStatus @default(AVAILABLE)
+  updatedAt  DateTime   @updatedAt
+
+  scheme Scheme @relation(fields: [schemeSlug], references: [slug], onDelete: Cascade)
+
+  @@unique([schemeSlug, number])
+  @@index([schemeSlug, status])
+}
+
+enum PlotStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+model Media {
+  id         String    @id @default(cuid())
+  schemeSlug String
+  kind       MediaKind
+  url        String
+  thumbUrl   String?
+  altGu      String?
+  altEn      String?
+  sortOrder  Int       @default(0)
+  bytes      Int
+  createdAt  DateTime  @default(now())
+
+  scheme Scheme @relation(fields: [schemeSlug], references: [slug], onDelete: Cascade)
+
+  @@index([schemeSlug, kind])
+}
+
+enum MediaKind {
+  COVER
+  GATE
+  AERIAL
+  LAYOUT_PLAN
+  LOCATION_MAP
+  GALLERY
+  BROCHURE_PDF
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String
+  entityId  String
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+}

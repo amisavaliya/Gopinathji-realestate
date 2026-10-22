@@ -1,0 +1,11 @@
+-- CreateEnum
+CREATE TYPE "ProjectType" AS ENUM ('RESIDENTIAL_PLOTS', 'RESIDENTIAL_FLATS', 'INDUSTRIAL_PLOTS');
+
+-- AlterTable
+ALTER TABLE "Scheme" ADD COLUMN     "configuration" TEXT,
+ADD COLUMN     "floorsLabel" TEXT,
+ADD COLUMN     "reraNumber" TEXT,
+ADD COLUMN     "towers" INTEGER,
+ADD COLUMN     "type" "ProjectType" NOT NULL DEFAULT 'RESIDENTIAL_PLOTS',
+ALTER COLUMN "surveyRef" DROP NOT NULL,
+ALTER COLUMN "totalPlots" SET DEFAULT 0;
